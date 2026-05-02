@@ -70,6 +70,25 @@ function update() {
     if (enemyMmoveDown) e.y += 12;
   });
   if (enemyMmoveDown) enemyMmoveDown = false;
+
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const b = bullets[i];
+      const e = enemies[j];
+
+      if (!e.alive)
+        continue; /*returnとは異なり処理を一回だけとばす。returnは関数ごと止めて外へ出す*/
+
+      const dx = Math.abs(b.x - e.x);
+      const dy = Math.abs(b.y - e.y);
+
+      if (dx < 14 && dy < 14) {
+        e.alive = false;
+        bullets.splice(i, 1);
+        break; /*消えた球をループで触り続けないようにするため*/
+      }
+    }
+  }
 }
 
 function draw() {
