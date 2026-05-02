@@ -13,6 +13,22 @@ const player = {
 const bullets = [];
 let shootCooldown = 0;
 
+const enemies = [];
+for (let row = 0; row < 3; row++) {
+  for (let col = 0; col < 8; col++) {
+    enemies.push({
+      x: 60 + col * 48,
+      y: 40 + row * 36,
+      w: 28,
+      h: 20,
+      alive: true,
+    });
+  }
+}
+
+let enemyDir = 1;
+let enemyMmoveDown = false;
+
 const keys = {};
 document.addEventListener(`keydown`, (e) => (keys[e.key] = true));
 document.addEventListener(`keyup`, (e) => (keys[e.key] = false));
@@ -40,6 +56,20 @@ function update() {
       bullets.splice(i, 1);
     }
   }
+
+  const alive = enemies.filter((e) => e.alive);
+
+  const hitWall = alive.some((e) => e.x < 20 || e.x > 460);
+  if (hitWall) {
+    enemyDir *= -1; /*値を反転させている (例 8 × -1 = -8)*/
+    enemyMmoveDown = true;
+  }
+
+  alive.forEach((e) => {
+    e.x += enemyDir * 0.8;
+    if (enemyMmoveDown) e.y += 12;
+  });
+  if (enemyMmoveDown) enemyMmoveDown = false;
 }
 
 function draw() {
@@ -57,6 +87,14 @@ function draw() {
   for (const b of bullets) {
     ctx.fillRect(b.x - 2, b.y - 8, 4, 10);
   }
+
+  enemies.forEach((e) => {
+    if (!e.alive) return;
+    ctx.fillStyle = `#f55`;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, 12, 0, Math.PI * 2);
+    ctx.fill();
+  });
 }
 
 function loop() {
