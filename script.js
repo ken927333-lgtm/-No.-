@@ -27,13 +27,22 @@ for (let row = 0; row < 3; row++) {
 }
 
 let enemyDir = 1;
-let enemyMmoveDown = false;
+let enemyMoveDown = false;
+
+let score = 0;
+let lives = 3;
+let gameStart = `playing`;
+
+const scoreEl = document.getElementById("scoreVal");
+const livesEl = document.getElementById("livesVal");
 
 const keys = {};
 document.addEventListener(`keydown`, (e) => (keys[e.key] = true));
 document.addEventListener(`keyup`, (e) => (keys[e.key] = false));
 
 function update() {
+  if (gameStart !== "playing") return;
+
   if (keys[`ArrowLeft`]) player.x -= player.speed;
   if (keys[`ArrowRight`]) player.x += player.speed;
 
@@ -59,17 +68,27 @@ function update() {
 
   const alive = enemies.filter((e) => e.alive);
 
+  if (alive.length === 0) {
+    gameStart = `clear`;
+    return;
+  }
+
   const hitWall = alive.some((e) => e.x < 20 || e.x > 460);
   if (hitWall) {
     enemyDir *= -1; /*値を反転させている (例 8 × -1 = -8)*/
-    enemyMmoveDown = true;
+    enemyMoveDown = true;
   }
 
   alive.forEach((e) => {
     e.x += enemyDir * 0.8;
-    if (enemyMmoveDown) e.y += 12;
+    if (enemyMoveDown) e.y += 12;
   });
-  if (enemyMmoveDown) enemyMmoveDown = false;
+  if (enemyMoveDown) enemyMoveDown = false;
+
+  if (alive.some((e) => e.y > 300)) {
+    gameStart = `over`;
+    return;
+  }
 
   for (let i = bullets.length - 1; i >= 0; i--) {
     for (let j = enemies.length - 1; j >= 0; j--) {
@@ -85,6 +104,9 @@ function update() {
       if (dx < 14 && dy < 14) {
         e.alive = false;
         bullets.splice(i, 1);
+
+        score += 10;
+        scoreEl.textContent = score;
         break; /*消えた球をループで触り続けないようにするため*/
       }
     }
@@ -114,6 +136,15 @@ function draw() {
     ctx.arc(e.x, e.y, 12, 0, Math.PI * 2);
     ctx.fill();
   });
+
+  if (gameStart === `over` || gameStart === `clear`) {
+    ctx.fillStyle = `rgba(0, 0, 0, 0.6)`;
+    ctx.fillRect(0, 0, 480, 360);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = gameStart === `clear` ? `#5f5` : `#f55`;
+    ctx.fillText(gameStart === `clear` ? `クリア` : `ゲームオーバー`, 240, 160);
+  }
 }
 
 function loop() {
