@@ -29,6 +29,18 @@ for (let row = 0; row < 3; row++) {
 let enemyDir = 1;
 let enemyMoveDown = false;
 
+const stars = [];
+for (let i = 0; i < 80; i++) {
+  stars.push({
+    x: Math.random() * 480,
+    y: Math.random() * 360,
+    size:
+      Math.random() * 2 +
+      0.5 /*ランダムなので限りなく0に近い値が出てしまうこともある。+0.5というのは星がどれだけ小さくても0.5はあるという最低値の保証のため*/,
+    speed: Math.random() * 1.5 + 0.3,
+  });
+}
+
 let score = 0;
 let lives = 3;
 let gameStart = `playing`;
@@ -42,6 +54,14 @@ document.addEventListener(`keyup`, (e) => (keys[e.key] = false));
 
 function update() {
   if (gameStart !== "playing") return;
+
+  stars.forEach((s) => {
+    s.y += s.speed;
+    if (s.y > 360) {
+      s.y = 0;
+      s.x = Math.random() * 480;
+    }
+  });
 
   if (keys[`ArrowLeft`]) player.x -= player.speed;
   if (keys[`ArrowRight`]) player.x += player.speed;
@@ -115,6 +135,13 @@ function update() {
 
 function draw() {
   ctx.clearRect(0, 0, 480, 360);
+
+  stars.forEach((s) => {
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + s.size * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
 
   ctx.fillStyle = `#4af`;
   ctx.beginPath();
